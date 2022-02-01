@@ -27,15 +27,14 @@ def format_to_parquet(local_path, src_filename):
     """
     import logging
 
-    import pyarrow.csv as pv
-    import pyarrow.parquet as pq
+    from pandas import read_csv
 
     src_file = os.path.join(local_path, src_filename)
     if not src_file.endswith(".csv"):
         logging.error("Can only accept source files in CSV format")
         return
-    table = pv.read_csv(src_file)
-    pq.write_table(table, src_file.replace(".csv", ".parquet"))
+    table = read_csv(src_file, on_bad_lines='skip')
+    table.to_parquet(src_file.replace(".csv", ".parquet"))
 
 
 def upload_to_gcs(bucket, gcs_path, local_path, filename):
