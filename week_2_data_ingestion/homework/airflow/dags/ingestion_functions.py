@@ -106,8 +106,7 @@ def convert_source_to_parquet(src_filename, bucket, gcs_path):
         return
     from tempfile import TemporaryDirectory
 
-    import pyarrow.csv as pv
-    import pyarrow.parquet as pq
+    from pandas import read_csv
     from google.cloud import storage
 
     # WORKAROUND to prevent timeout for files > 6 MB on 800 kbps upload speed.
@@ -125,8 +124,8 @@ def convert_source_to_parquet(src_filename, bucket, gcs_path):
         src_blob = bucket.blob(src_object_name)
         src_blob.download_to_filename(tmp_src)
 
-        table = pv.read_csv(tmp_src)
-        pq.write_table(table, tmp_dst)
+        table = read_csv(tmp_src, on_bad_lines='skip')
+        table.to_parquet(tmp_dst)
 
         dst_object_name = os.path.join(gcs_path, dst_filename)
         dst_blob = bucket.blob(dst_object_name)
